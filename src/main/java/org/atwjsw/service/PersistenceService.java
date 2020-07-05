@@ -3,11 +3,14 @@ package org.atwjsw.service;
 import org.atwjsw.entity.Todo;
 import org.atwjsw.entity.TodoUser;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.sql.DataSourceDefinition;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.SecurityContext;
 import java.util.List;
 import java.util.Map;
 
@@ -24,8 +27,8 @@ import java.util.Map;
 @Stateless
 public class PersistenceService {
 
-    @Inject
-    private MySession mySession;
+//    @Inject
+//    private MySession mySession;
 
     @Inject
     QueryService queryService;
@@ -35,6 +38,9 @@ public class PersistenceService {
 
     @PersistenceContext(name = "pu")
     EntityManager em;
+
+    @Context
+    SecurityContext securityContext;
 
     public TodoUser saveTodoUser(TodoUser todoUser) {
 
@@ -69,9 +75,7 @@ public class PersistenceService {
 
     public Todo saveTodo(Todo todo) {
 
-        String email = mySession.getEmail();
-
-        TodoUser todoUserByEmail = queryService.findTodoUserByEmail(email);
+        TodoUser todoUserByEmail = queryService.findTodoUserByEmail(securityContext.getUserPrincipal().getName());
 
         if (todo.getId() == null && todoUserByEmail !=  null) {
             todo.setTodoOwner(todoUserByEmail);

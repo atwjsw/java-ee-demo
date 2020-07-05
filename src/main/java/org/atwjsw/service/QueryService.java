@@ -3,15 +3,20 @@ package org.atwjsw.service;
 import org.atwjsw.entity.Todo;
 import org.atwjsw.entity.TodoUser;
 
+import javax.annotation.PostConstruct;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.SecurityContext;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Stateless
 public class QueryService {
@@ -19,8 +24,14 @@ public class QueryService {
     @PersistenceContext
     EntityManager em;
 
-    @Inject
-    MySession mySession;
+//    @Inject
+//    MySession mySession;
+
+    @Context
+    SecurityContext securityContext;
+
+    //    @Inject
+//    private Logger logger;
 
     @Inject
     SecurityUtil securityUtil;
@@ -43,7 +54,7 @@ public class QueryService {
     public TodoUser findTodoUserById(Long id) {
         return em.createNamedQuery(TodoUser.FIND_TODO_USER_BY_ID, TodoUser.class)
             .setParameter("id", id)
-            .setParameter("email", mySession.getEmail())
+            .setParameter("email", securityContext.getUserPrincipal().getName())
             .getSingleResult();
     }
 
@@ -63,7 +74,7 @@ public class QueryService {
 
     public Collection<Todo> findAllTodos() {
         return em.createNamedQuery(Todo.FIND_ALL_TODOS_BY_OWNER_EMAIL, Todo.class)
-            .setParameter("email", mySession.getEmail()).getResultList();
+            .setParameter("email", securityContext.getUserPrincipal().getName()).getResultList();
     }
 
     public int countTodoUserByEmail(String email) {
@@ -82,7 +93,7 @@ public class QueryService {
     public Todo findTodoById(Long id) {
         List<Todo> resultList = em.createQuery("select t from Todo t where t.id =:id and t.todoOwner.email = :email ", Todo.class)
             .setParameter("id", id)
-            .setParameter("email", mySession.getEmail())
+            .setParameter("email", securityContext.getUserPrincipal().getName())
             .getResultList();
 
         if (!resultList.isEmpty()) {
@@ -111,14 +122,14 @@ public class QueryService {
 
     private List<Todo> getTodosByState(boolean state) {
         return em.createQuery("select t from Todo t where t.todoOwner.email = :email and t.completed = :state", Todo.class)
-            .setParameter("email", mySession.getEmail())
+            .setParameter("email", securityContext.getUserPrincipal().getName())
             .setParameter("state", state)
             .getResultList();
     }
 
     public List<Todo> getTodosByDueDate(LocalDate dueDate) {
         return em.createQuery("select t from Todo t where t.todoOwner.email = :email and t.dueDate <= :dueDate", Todo.class)
-            .setParameter("email", mySession.getEmail())
+            .setParameter("email", securityContext.getUserPrincipal().getName())
             .setParameter("state", dueDate)
             .getResultList();
     }

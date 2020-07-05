@@ -1,5 +1,7 @@
 package org.atwjsw.config;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import org.atwjsw.service.MySession;
 import org.atwjsw.service.SecurityUtil;
@@ -8,16 +10,16 @@ import javax.annotation.Priority;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.Priorities;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.ext.Provider;
 import java.io.IOException;
 import java.security.Key;
-import java.util.List;
+import java.security.Principal;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -53,13 +55,50 @@ public class SecurityFilter implements ContainerRequestFilter {
 
         String token = authString.substring(BEARER.length());
 
+
         try {
-            Key key = securityUtil.generateKey(mySession.getEmail());
-            Jwts.parser().setSigningKey(key).parse(token);
+            Key key = securityUtil.generateKey();
+//            Jwts.parser().setSigningKey(key).parse(token);
+            Jws<Claims> claimsJws = Jwts.parser().setSigningKey(key).parseClaimsJws(token);
+
+             // instantiate a new SecurityContext
+            SecurityContext originalSecurityContext = requestContext.getSecurityContext();
+            SecurityContext newSecurityContext = new SecurityContext() {
+
+                @Override
+                public Principal getUserPrincipal() {
+                    return new Principal() {
+                        @Override
+                        public String getName() {
+                            return claimsJws.getBody().getSubject();
+                        }
+                    };
+                }
+
+                @Override
+                public boolean isUserInRole(String role) {
+                    return originalSecurityContext.isUserInRole(role);
+                }
+
+                @Override
+                public boolean isSecure() {
+                    return originalSecurityContext.isSecure();
+                }
+
+                @Override
+                public String getAuthenticationScheme() {
+                    return originalSecurityContext.getAuthenticationScheme();
+                }
+            };
+
+            requestContext.setSecurityContext(newSecurityContext);
+
         } catch (Exception e) {
             logger.log(Level.WARNING, "Invalid jwt token", e);
             requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
         }
-;
+
+
+
     }
 }

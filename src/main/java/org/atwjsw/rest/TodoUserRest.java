@@ -2,7 +2,6 @@ package org.atwjsw.rest;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import lombok.extern.slf4j.Slf4j;
 import org.atwjsw.config.SecureAuth;
 import org.atwjsw.config.SecurityFilter;
 import org.atwjsw.entity.TodoUser;
@@ -22,7 +21,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.security.Key;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.logging.Level;
@@ -50,8 +48,8 @@ public class TodoUserRest {
     @Inject
     Logger logger;
 
-    @Inject
-    MySession mySession;
+//    @Inject
+//    MySession mySession;
 
     @Path("create")
     @POST
@@ -121,13 +119,13 @@ public class TodoUserRest {
             throw new SecurityException("Email or password is invalid");
         }
         String token = getToken(email);
-        mySession.setEmail(email);
+//        mySession.setEmail(email);
 
         return Response.ok().header(AUTHORIZATION, SecurityFilter.BEARER + " " + token).build();
     }
 
     private String getToken(String email) {
-        Key key = securityUtil.generateKey(email);
+        Key key = securityUtil.generateKey();
 
         String token = Jwts.builder()
             .setSubject(email)

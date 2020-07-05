@@ -3,6 +3,7 @@ package org.atwjsw.entity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import javax.json.bind.annotation.JsonbTransient;
 import javax.persistence.*;
 import javax.validation.constraints.*;
 import java.io.Serializable;
@@ -31,6 +32,7 @@ public class TodoUser extends AbstractEntity implements Serializable {
     @Email(message = "Email must be in the format user@domain.com")
     private String email; //varchar 100
 
+//    @JsonbTransient
     @NotNull(message = "Password cannot be empty")
     @Size(min = 8, max = 500, message = "Password must be at minimum of 8 character, max 500 characters.")
 //    @Pattern(regexp = "^[$%&#]*[A-Z]*[a-z]*[0-9]*", message = "Password must have at least one upper case, one lower case" +
@@ -41,8 +43,20 @@ public class TodoUser extends AbstractEntity implements Serializable {
     @Size(min = 2, max = 100, message = "Name must be at minimum of 2 character, max 100 characters.")
     private String fullName;
 
+//    @JsonbTransient
     private String salt;
 
 //    @OneToMany // in production, normally don't do the oneToMany side due to performance consideration
 //    private final Collection<Todo> todos = new ArrayList<>();
+
+    @JsonbTransient
+    public String getPassword() {
+        return password;
+    }
+
+    @JsonbTransient
+    public String getSalt() {
+        return salt;
+    }
+
 }

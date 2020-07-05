@@ -14,6 +14,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import javax.inject.Inject;
+import javax.ws.rs.core.SecurityContext;
 
 import java.time.LocalDate;
 import java.util.UUID;
@@ -71,7 +72,7 @@ public class PersistenceServiceTest {
     @Test
     public void saveTodoUser() {
         persistenceService.saveTodoUser(todoUser);
-        persistenceService.saveTodo(todo);
+//        persistenceService.saveTodo(todo);
 
         assertNotNull(todoUser.getId());
 //        assertNotNull(todo.getTodoOwner().getId());

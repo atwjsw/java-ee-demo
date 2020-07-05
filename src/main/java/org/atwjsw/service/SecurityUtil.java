@@ -1,30 +1,40 @@
 package org.atwjsw.service;
 
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.impl.crypto.MacProvider;
 import org.apache.shiro.codec.Hex;
 import org.apache.shiro.crypto.SecureRandomNumberGenerator;
 import org.apache.shiro.crypto.hash.Sha512Hash;
 import org.apache.shiro.util.ByteSource;
 
-import javax.crypto.spec.SecretKeySpec;
-import javax.enterprise.context.RequestScoped;
+import javax.annotation.PostConstruct;
+import javax.crypto.SecretKey;
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.security.Key;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-@RequestScoped
+@ApplicationScoped
 public class SecurityUtil {
 
     @Inject
     private QueryService queryService;
 
+    private SecretKey secretKey;
+
+    @PostConstruct
+    private void init() {
+        secretKey = MacProvider.generateKey(SignatureAlgorithm.HS512);
+    }
+
     // generate a secret key to sign the jwt token
-    public Key generateKey(String keyString) {
-        return new SecretKeySpec(keyString.getBytes(), 0, keyString.length(), "DES");
+    public Key generateKey() {
+        return secretKey;
+//        return new SecretKeySpec(keyString.getBytes(), 0, keyString.length(), "DES");
     }
 
     public boolean authenticateUser(String email, String password) {
