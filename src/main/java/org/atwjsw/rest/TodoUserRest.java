@@ -16,10 +16,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.core.*;
 import java.security.Key;
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -69,8 +66,13 @@ public class TodoUserRest {
     @Path("find/{email}")
     @GET
     @SecureAuth
-    public TodoUser findTodoUserByEmail(@NotNull @PathParam("email") String email) {
-        return queryService.findTodoUserByEmail(email);
+    public Response findTodoUserByEmail(@NotNull @PathParam("email") String email) {
+        CacheControl cacheControl = new CacheControl();
+        cacheControl.setPrivate(true);
+        cacheControl.setMaxAge(5);
+        cacheControl.setNoStore(true);
+
+        return Response.ok(queryService.findTodoUserByEmail(email)).cacheControl(cacheControl).build();
     }
 
     @Path("query")
